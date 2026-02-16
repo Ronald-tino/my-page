@@ -32,7 +32,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: version-react-vite
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Build site
         working-directory: version-react-vite
