@@ -64,7 +64,7 @@ function AwsSportsDataLake() {
       </div>
 
       <p>
-        In this blog post, we'll walk through building a data lake on AWS to
+        In this blog post,  we'll walk through building a data lake on AWS to
         analyze NBA player data. We'll be using Amazon S3 for storage, AWS Glue
         for data cataloging, and AWS Athena for querying. The unique part?
         Instead of using the AWS CLI in Cloud Shell, we'll leverage VS Code’s
