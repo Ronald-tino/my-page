@@ -83,7 +83,7 @@ function ResumeNew() {
                     letterSpacing: "1px",
                   }}
                 >
-                  Ronald Tino
+                  Tinaye
                 </h1>
                 <h2
                   style={{

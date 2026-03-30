@@ -10,6 +10,7 @@ function Type() {
           "Solutions Architect",
           "DevOps Engineer",
           "AWS Specialist",
+          "System Admin",
         ],
         autoStart: true,
         loop: true,
