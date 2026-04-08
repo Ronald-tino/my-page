@@ -33,6 +33,7 @@ import AwsSportsDataLake from "./components/Blog/AwsSportsDataLake.jsx";
 import ScalableSportsApi from "./components/Blog/ScalableSportsApi.jsx";
 import NcaaHighlightPipeline from "./components/Blog/NcaaHighlightPipeline.jsx";
 import ContentLibrary from "./components/Blog/ContentLibrary.jsx";
+import ThirtySeconds from "./components/Game/ThirtySeconds.jsx";
 function App() {
   const [load, upadateLoad] = useState(true);
 
@@ -184,6 +185,7 @@ function App() {
             path="/blog/content-library-ecommerce"
             element={<Navigate to="/project/content-library-ecommerce" replace />}
           />
+          <Route path="/game" element={<ThirtySeconds />} />
           <Route path="/resume" element={<Resume />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

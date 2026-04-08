@@ -13,6 +13,7 @@ import {
 } from "react-icons/ai";
 
 import { CgFileDocument } from "react-icons/cg";
+import { AiOutlineClockCircle } from "react-icons/ai";
 
 function NavBar() {
   const [expand, updateExpanded] = useState(false);
@@ -87,6 +88,16 @@ function NavBar() {
                 onClick={() => updateExpanded(false)}
               >
                 <CgFileDocument style={{ marginBottom: "2px" }} /> Resume
+              </Nav.Link>
+            </Nav.Item>
+
+            <Nav.Item>
+              <Nav.Link
+                as={Link}
+                to="/game"
+                onClick={() => updateExpanded(false)}
+              >
+                <AiOutlineClockCircle style={{ marginBottom: "2px" }} /> 30 Seconds
               </Nav.Link>
             </Nav.Item>
 

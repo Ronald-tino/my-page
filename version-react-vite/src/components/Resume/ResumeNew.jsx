@@ -83,7 +83,7 @@ function ResumeNew() {
                     letterSpacing: "1px",
                   }}
                 >
-                  Tinaye
+                  Tino
                 </h1>
                 <h2
                   style={{
