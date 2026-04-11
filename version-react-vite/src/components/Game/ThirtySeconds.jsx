@@ -405,45 +405,43 @@ function LanguageSelect({ onSelect }) {
 }
 
 /* ================================================================ */
-/*         SCREEN (per turn): PICK CATEGORY                          */
+/*         SCREEN (once before game): PICK CATEGORIES                */
 /* ================================================================ */
-function PickCategory({ wordPack, currentPlayer, currentTeam, teams, currentRound, onPick }) {
+function PickCategories({ wordPack, selected, setSelected, onConfirm, onBack }) {
   const meta = getCategoryMeta(wordPack);
   const bank = getWordBank(wordPack);
   const categories = Object.keys(bank);
 
+  const toggle = (cat) => {
+    setSelected((prev) => prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]);
+  };
+  const selectAll = () => setSelected(categories);
+  const clearAll = () => setSelected([]);
+
   return (
     <div>
-      <Scoreboard teams={teams} currentRound={currentRound} />
-
-      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px", justifyContent: "center" }}>
-        <div style={{
-          width: "45px", height: "45px", borderRadius: "50%", background: currentPlayer.color,
-          display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "1.2em",
-        }}><AiOutlineUser /></div>
-        <div>
-          <span style={{ color: "#fff", fontWeight: "600" }}>{currentPlayer.name}</span>
-          <span style={{ display: "block", color: "rgba(255,255,255,0.4)", fontSize: "0.78em" }}>{currentTeam.name}</span>
-        </div>
-      </div>
-
-      <h3 style={{ color: "#fff", textAlign: "center", fontWeight: "700", marginBottom: "5px" }}>Pick a Category</h3>
-      <p style={{ color: "rgba(255,255,255,0.4)", textAlign: "center", fontSize: "0.85em", marginBottom: "22px" }}>
-        Choose which category you want to play this round
+      <h3 style={{ color: "#fff", textAlign: "center", fontWeight: "700", marginBottom: "5px" }}>Pick Categories</h3>
+      <p style={{ color: "rgba(255,255,255,0.4)", textAlign: "center", fontSize: "0.85em", marginBottom: "18px" }}>
+        Select the categories to use for the whole game. Each turn will get a random one.
       </p>
+
+      <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginBottom: "18px" }}>
+        <button onClick={selectAll} style={{ ...outlineBtn, padding: "8px 18px", fontSize: "0.85em" }}>Select All</button>
+        <button onClick={clearAll} style={{ ...outlineBtn, padding: "8px 18px", fontSize: "0.85em" }}>Clear</button>
+      </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "20px" }}>
         {categories.map((cat) => {
           const m = meta[cat] || { color: "#8b5cf6", emoji: "\uD83C\uDFAE" };
+          const isSelected = selected.includes(cat);
           return (
-            <div key={cat} onClick={() => onPick(cat)}
+            <div key={cat} onClick={() => toggle(cat)}
               style={{
                 ...cardStyle, padding: "18px 14px", cursor: "pointer",
-                border: `2px solid rgba(255,255,255,0.06)`,
+                border: `2px solid ${isSelected ? m.color : "rgba(255,255,255,0.06)"}`,
+                background: isSelected ? `${m.color}22` : "rgba(255,255,255,0.06)",
                 transition: "all 0.15s ease", position: "relative", zIndex: 2, textAlign: "center",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${m.color}60`; e.currentTarget.style.background = `${m.color}12`; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
             >
               <div style={{ fontSize: "2em", marginBottom: "6px" }}>{m.emoji}</div>
               <h6 style={{ color: "#fff", margin: "0 0 3px", fontWeight: "600", fontSize: "0.82em" }}>{cat}</h6>
@@ -451,6 +449,14 @@ function PickCategory({ wordPack, currentPlayer, currentTeam, teams, currentRoun
             </div>
           );
         })}
+      </div>
+
+      <div style={{ textAlign: "center", display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
+        <button onClick={onBack} style={outlineBtn}>Back</button>
+        <button onClick={onConfirm} disabled={selected.length === 0}
+          style={{ ...orangeBtn, opacity: selected.length === 0 ? 0.4 : 1, cursor: selected.length === 0 ? "not-allowed" : "pointer" }}>
+          Start Game ({selected.length})
+        </button>
       </div>
     </div>
   );
@@ -849,6 +855,7 @@ function ThirtySeconds() {
   const [currentRound, setCurrentRound] = useState(1);
   const [currentTeamIdx, setCurrentTeamIdx] = useState(0);
   const [playerIndices, setPlayerIndices] = useState({});
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState("");
   const [currentWords, setCurrentWords] = useState([]);
   const [checked, setChecked] = useState([]);
@@ -890,13 +897,16 @@ function ThirtySeconds() {
     setScreen("settings");
   };
 
-  const startTurn = () => setScreen("turnAnnounce");
+  // After settings, go to category selection
+  const goPickCategories = () => setScreen("pickCategories");
 
-  // After turn announce, go to category picker
-  const goPickCategory = () => setScreen("pickCategory");
+  // After categories are chosen, begin the first turn announcement
+  const confirmCategories = () => setScreen("turnAnnounce");
 
-  // After picking category, start playing
-  const playTurn = (category) => {
+  // From turn announce, pick a random category from selected and play
+  const playTurn = () => {
+    if (selectedCategories.length === 0) return;
+    const category = selectedCategories[Math.floor(Math.random() * selectedCategories.length)];
     setActiveCategory(category);
     const bank = getWordBank(wordPack);
     const words = getRandomWords(settings.wordsPerTurn, category, bank, usedWords);
@@ -980,15 +990,16 @@ function ThirtySeconds() {
             )}
 
             {screen === "settings" && (
-              <GameSettings settings={settings} setSettings={setSettings} onStart={startTurn} onBack={() => setScreen("teamsCreated")} />
+              <GameSettings settings={settings} setSettings={setSettings} onStart={goPickCategories} onBack={() => setScreen("teamsCreated")} />
+            )}
+
+            {screen === "pickCategories" && (
+              <PickCategories wordPack={wordPack} selected={selectedCategories} setSelected={setSelectedCategories}
+                onConfirm={confirmCategories} onBack={() => setScreen("settings")} />
             )}
 
             {screen === "turnAnnounce" && (
-              <TurnAnnounce teams={teams} currentPlayer={getCurrentPlayer()} currentTeam={getCurrentTeam()} currentRound={currentRound} onPlay={goPickCategory} />
-            )}
-
-            {screen === "pickCategory" && (
-              <PickCategory wordPack={wordPack} currentPlayer={getCurrentPlayer()} currentTeam={getCurrentTeam()} teams={teams} currentRound={currentRound} onPick={playTurn} />
+              <TurnAnnounce teams={teams} currentPlayer={getCurrentPlayer()} currentTeam={getCurrentTeam()} currentRound={currentRound} onPlay={playTurn} />
             )}
 
             {screen === "playing" && (
@@ -1009,9 +1020,9 @@ function ThirtySeconds() {
                   setTeams((prev) => prev.map((t) => ({ ...t, score: 0 })));
                   setCurrentRound(1); setCurrentTeamIdx(0);
                   const indices = {}; teams.forEach((_, i) => { indices[i] = 0; }); setPlayerIndices(indices);
-                  setUsedWords(new Set()); startTurn();
+                  setUsedWords(new Set()); setScreen("turnAnnounce");
                 }}
-                onBackToMenu={() => { setPlayers([]); setTeams([]); setScreen("landing"); }} />
+                onBackToMenu={() => { setPlayers([]); setTeams([]); setSelectedCategories([]); setScreen("landing"); }} />
             )}
 
           </Col>
